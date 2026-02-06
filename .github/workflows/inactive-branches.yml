@@ -1,0 +1,86 @@
+name: Remove Inactive Branches
+run-name: Remove Inactive Branches - ${{ github.ref }}
+on:
+  workflow_dispatch:
+  inputs:
+    inactive_days:
+      description: 'Number of days to consider a branch as inactive'
+      required: false
+      default: '60'
+    grace_period_days:
+      description: 'Number of additional days to wait before deleting an inactive branch'
+      required: false
+      default: '7'
+    dry_run:
+      description: 'Set to true to only log the branches that would be deleted without actually deleting them'
+      required: false
+      default: 'true'
+  # schedule:
+  #   - cron: '0 0 * * 0' # Runs every Sunday at midnight
+jobs:
+  locate-Inactive-Branches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Git
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email '
+
+      - name: Find Inactive Branches
+        env:
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          # Fetch all branches
+          git fetch --all
+
+          # Get the list of branches, commit author and their last commit dates
+          branches=$(git for-each-ref --format='%(refname:short) %(authorname) %(committerdate:iso8601)' refs/heads/)
+
+          # Get the current date
+          current_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          # Loop through each branch and check if it's inactive
+          while read -r branch last_commit_date; do
+            # Calculate the difference in days between the current date and the last commit date
+            last_commit_timestamp=$(date -d "$last_commit_date" +%s)
+            current_timestamp=$(date -d "$current_date" +%s)
+            diff_days=$(( (current_timestamp - last_commit_timestamp) / 86400 ))
+
+            # Skip protected branches
+            if [ $branch == "main" ] || [ $branch == "master" ] || [ $branch == "develop" ] || [ $branch == "release" ]; then
+              echo "Skipping protected branch: $branch"
+              continue
+            fi
+
+            # Fall back to GitHub API
+            repo=$(git config --get remote.origin.url | sed 's/.*github.com[:/]\(.*\)\.git/\1/')
+            open_prs=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/$OWNER/$REPO/pulls?head=${OWNER}:$branch&state=open" | grep -c '"number"')
+
+            if [ "$open_prs" -gt 0 ]; then
+              echo "Skipping branch: $branch (has $open_prs open PR(s))"
+              continue
+            fi
+
+            # If the branch is inactive for more than inactive days, then send a notification to the author
+            if [ $diff_days -gt ${{ inputs.inactive_days }} ]; then
+              echo "Branch: $branch is inactive for $diff_days days (Last commit: $last_commit_date) Author: $author"
+              if [ "${{ inputs.dry_run }}" = "false" ]; then
+                curl -s -H "Authorization: token $GITHUB_TOKEN" -X POST "https://api.github.com/repos/$OWNER/$REPO/issues" -d "{\"title\":\"Inactive Branch: $branch\",\"body\":\"The branch '$branch' has been inactive for $diff_days days. Last commit was on $last_commit_date. Please review and delete if not needed.\",\"assignees\":[\"$author\"]}"
+              else
+                echo "DRY RUN: Would create an issue for branch: $branch (Author: $author)"
+              fi
+            fi	
+
+            # If the branch is inactive for more than inactive days + grace period, then delete it only if it's not a dry run
+            if [ $diff_days -gt $(({{inputs.inactive_days}} + {{inputs.grace_period_days}})) ]; then
+              echo "Deleting inactive branch: $branch (Last commit: $last_commit_date) Author: $author"
+              if [ "${{ inputs.dry_run }}" = "false" ]; then
+                git push origin --delete "$branch"
+              fi
+            fi
+          done <<< "$branches"
+
