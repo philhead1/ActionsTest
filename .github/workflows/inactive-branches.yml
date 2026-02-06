@@ -2,21 +2,21 @@ name: Remove Inactive Branches
 run-name: Remove Inactive Branches - ${{ github.ref }}
 on:
   workflow_dispatch:
-  inputs:
-    inactive_days:
-      description: 'Number of days to consider a branch as inactive'
-      required: false
-      default: '60'
-    grace_period_days:
-      description: 'Number of additional days to wait before deleting an inactive branch'
-      required: false
-      default: '7'
-    dry_run:
-      description: 'Set to true to only log the branches that would be deleted without actually deleting them'
-      required: false
-      default: 'true'
-  # schedule:
-  #   - cron: '0 0 * * 0' # Runs every Sunday at midnight
+    inputs:
+      inactive_days:
+        description: 'Number of days to consider a branch as inactive'
+        required: false
+        default: '60'
+      grace_period_days:
+        description: 'Number of additional days to wait before deleting an inactive branch'
+        required: false
+        default: '7'
+      dry_run:
+        description: 'Set to true to only log the branches that would be deleted without actually deleting them'
+        required: false
+        default: 'true'
+    # schedule:
+    #   - cron: '0 0 * * 0' # Runs every Sunday at midnight
 jobs:
   locate-Inactive-Branches:
     runs-on: ubuntu-latest
