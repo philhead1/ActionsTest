@@ -38,13 +38,13 @@ jobs:
           git fetch --all
 
           # Get the list of branches, commit author and their last commit dates
-          branches=$(git for-each-ref --format='%(refname:short) %(authorname) %(committerdate:iso8601)' refs/heads/)
+          branches=$(git for-each-ref --format='%(refname:short)|%(authorname)|%(committerdate:iso8601)' refs/heads/)
 
           # Get the current date
           current_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
           # Loop through each branch and check if it's inactive
-          while read -r branch author last_commit_date; do
+          while IFS='|' read -r branch author last_commit_date; do
             # Calculate the difference in days between the current date and the last commit date
             last_commit_timestamp=$(date -d "$last_commit_date" +%s)
             current_timestamp=$(date -d "$current_date" +%s)
