@@ -50,6 +50,8 @@ jobs:
             current_timestamp=$(date -d "$current_date" +%s)
             diff_days=$(( (current_timestamp - last_commit_timestamp) / 86400 ))
 
+            echo "Checking branch: $branch (Last commit: $last_commit_date, Author: $author, Inactive for: $diff_days days)"
+
             # Skip protected branches
             if [ $branch == "main" ] || [ $branch == "master" ] || [ $branch == "develop" ] || [ $branch == "release" ]; then
               echo "Skipping protected branch: $branch"
