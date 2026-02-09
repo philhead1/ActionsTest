@@ -76,7 +76,7 @@ jobs:
             fi	
 
             # If the branch is inactive for more than inactive days + grace period, then delete it only if it's not a dry run
-            if [ $diff_days -gt $(({{inputs.inactive_days}} + {{inputs.grace_period_days}})) ]; then
+            if [ $diff_days -gt $(( ${{ inputs.inactive_days}} + ${{ inputs.grace_period_days }} )) ]; then
               echo "Deleting inactive branch: $branch (Last commit: $last_commit_date) Author: $author"
               if [ "${{ inputs.dry_run }}" = "false" ]; then
                 git push origin --delete "$branch"
