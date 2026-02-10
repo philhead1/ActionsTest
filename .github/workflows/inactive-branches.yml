@@ -38,7 +38,7 @@ jobs:
           git fetch --all
 
           # Get the list of branches, commit author and their last commit dates
-          branches=$(git for-each-ref --format='%(refname:short)|%(authorname)|%(committerdate:iso8601)' refs/heads/)
+          branches=$(git for-each-ref --format='%(refname:short)|%(authorname)|%(committerdate:iso8601)' refs/remotes/origin/)
 
           echo "Total branches found: $(echo "$branches" | wc -l)"
 
