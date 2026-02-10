@@ -35,6 +35,9 @@ jobs:
           OWNER: ${{ github.repository_owner }}
           PAT: ${{ secrets.PAT }}
         run: |
+          # install curl
+          apt-get update && apt-get install -y curl
+
           # Fetch all branches
           git fetch --all
 
