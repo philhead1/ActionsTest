@@ -70,9 +70,9 @@ jobs:
             echo "Repository: $repo"
 
             echo "Checking open PRs for branch: $branch"
-            echo "Calling API: https://api.github.com/repos/$REPO/pulls?head=${OWNER}:$branch&state=open"
+            echo "Calling API: https://api.github.com/repos/$OWNER/$REPO/pulls?head=${OWNER}:$branch&state=open"
 
-            open_prs=$(curl -s -H "Authorization: Bearer $PAT" -L "https://api.github.com/repos/$REPO/pulls?head=${OWNER}:$branch&state=open" | grep -c '"number"')
+            open_prs=$(curl -s -H "Authorization: Bearer $PAT" -L "https://api.github.com/repos/$OWNER/$REPO/pulls?head=${OWNER}:$branch&state=open" | grep -c '"number"')
             echo "Open PRs for branch $branch: $open_prs"
 
             if [ "$open_prs" -gt 0 ]; then
@@ -86,7 +86,7 @@ jobs:
             if [ $diff_days -gt ${{ inputs.inactive_days }} ]; then
               echo "Branch: $branch is inactive for $diff_days days (Last commit: $last_commit_date) Author: $author"
               if [ "${{ inputs.dry_run }}" = "false" ]; then
-                curl -s -H "Authorization: Bearer $PAT"  -X POST "https://api.github.com/repos/$REPO/issues" -d "{\"title\":\"Inactive Branch: $branch\",\"body\":\"The branch '$branch' has been inactive for $diff_days days. Last commit was on $last_commit_date. Please review and delete if not needed.\",\"assignees\":[\"$author\"]}"
+                curl -s -H "Authorization: Bearer $PAT"  -X POST "https://api.github.com/repos/$OWNER/$REPO/issues" -d "{\"title\":\"Inactive Branch: $branch\",\"body\":\"The branch '$branch' has been inactive for $diff_days days. Last commit was on $last_commit_date. Please review and delete if not needed.\",\"assignees\":[\"$author\"]}"
               else
                 echo "DRY RUN: Would create an issue for branch: $branch (Author: $author)"
               fi
