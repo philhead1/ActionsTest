@@ -69,6 +69,8 @@ jobs:
               continue
             fi
 
+            echo "Branch: $branch is inactive for $diff_days days (Last commit: $last_commit_date) Author: $author"
+
             # If the branch is inactive for more than inactive days, then send a notification to the author
             if [ $diff_days -gt ${{ inputs.inactive_days }} ]; then
               echo "Branch: $branch is inactive for $diff_days days (Last commit: $last_commit_date) Author: $author"
