@@ -48,6 +48,9 @@ jobs:
 
           # Loop through each branch and check if it's inactive
           while IFS='|' read -r branch author last_commit_date; do
+            # Strip 'origin/' prefix from branch name
+            branch=${branch#origin/}
+            
             # Calculate the difference in days between the current date and the last commit date
             last_commit_timestamp=$(date -d "$last_commit_date" +%s)
             current_timestamp=$(date -d "$current_date" +%s)
@@ -65,6 +68,10 @@ jobs:
             echo "Checking for open PRs for branch: $branch"
             repo=$(git config --get remote.origin.url | sed 's/.*github.com[:/]\(.*\)\.git/\1/')
             echo "Repository: $repo"
+
+            echo "Checking open PRs for branch: $branch"
+            echo "Calling API: https://api.github.com/repos/$OWNER/$REPO/pulls?head=${OWNER}:$branch&state=open"
+
             open_prs=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$OWNER/$REPO/pulls?head=${OWNER}:$branch&state=open" | grep -c '"number"')
             echo "Open PRs for branch $branch: $open_prs"
 
