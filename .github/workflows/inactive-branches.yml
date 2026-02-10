@@ -74,10 +74,10 @@ jobs:
             repo=$(git config --get remote.origin.url | sed 's/.*github.com[:/]\(.*\)\.git/\1/')
             echo "Repository: $repo"
 
-            test1= $(curl -s -H "Authorization: Bearer $PAT" -L "https://api.github.com/repos/$OWNER/$REPO/pulls?head=${OWNER}:$branch&state=open")
+            test1=$(curl -s -H "Authorization: Bearer $PAT" -L "https://api.github.com/repos/$OWNER/$REPO/pulls?head=${OWNER}:$branch&state=open")
             echo $test1
-            
-            test2-=$(echo $test1 | grep -c '"number"')
+
+            test2=$(echo $test1 | grep -c '"number"')
             echo $test2
 
             echo "Checking open PRs for branch: $branch"
