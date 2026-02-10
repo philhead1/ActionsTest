@@ -77,11 +77,11 @@ jobs:
             echo "Checking open PRs for branch: $branch"
             echo "Calling API: https://api.github.com/repos/$OWNER/$REPO/pulls?head=${OWNER}:$branch&state=open"
 
-            open_prs=$(curl -H "Authorization: Bearer $PAT" -L "https://api.github.com/repos/$OWNER/$REPO/pulls?head=${OWNER}:$branch&state=open" | grep -c '"number"')
-            echo "Open PRs for branch $branch: $open_prs"
+            openprs=$(curl -H "Authorization: Bearer $PAT" -L "https://api.github.com/repos/$OWNER/$REPO/pulls?head=${OWNER}:$branch&state=open" | grep -c '"number"')
+            echo "Open PRs for branch $branch: $openprs"
 
-            if [ "$open_prs" -gt 0 ]; then
-              echo "Skipping branch: $branch (has $open_prs open PR(s))"
+            if [ "$openprs" -gt 0 ]; then
+              echo "Skipping branch: $branch (has $openprs open PR(s))"
               continue
             fi
 
