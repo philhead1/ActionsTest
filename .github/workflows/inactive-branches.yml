@@ -32,7 +32,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl git
+          sudo apt-get install -y curl git grep
 
       - name: Find Inactive Branches
         env:
