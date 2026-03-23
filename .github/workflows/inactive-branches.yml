@@ -1,7 +1,5 @@
 name: Remove Inactive Branches
 run-name: Remove Inactive Branches - ${{ github.ref }}
-env: 
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 on:
   workflow_dispatch:
     inputs:
@@ -24,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
 
       - name: Set up Git
         run: |
