@@ -38,7 +38,7 @@ jobs:
         env:
           REPO: ${{ github.event.repository.name }}
           OWNER: ${{ github.repository_owner }}
-          PAT: ${{ secrets.PAT }}
+          PAT: ${{ GITHUB_TOKEN }}
         run: |
           # Fetch all branches
           git fetch --all
