@@ -71,7 +71,7 @@ jobs:
             fi
             
             # Check if there are any open PRs for the branch
-            repo=$(git config --get remote.origin.url | sed 's/.*github.com[:/]\(.*\)/\1/')
+            repo=$(git config --get remote.origin.url | sed 's/.*github.com.*[:/]\(.*\)/\1/')
             echo "Repository: $repo"
 
             test1=$(curl -s -H "Authorization: Bearer $PAT" -L "https://api.github.com/repos/$OWNER/$REPO/pulls?head=$OWNER:$branch&state=open")
