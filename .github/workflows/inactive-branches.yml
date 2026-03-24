@@ -75,10 +75,7 @@ jobs:
             echo "Repo name: $REPO, Owner: $OWNER"
 
             echo "Checking open PRs for branch: $branch"
-            echo "Calling API: https://api.github.com/repos/$OWNER/$REPO/pulls?head=$OWNER:$branch&state=open"
-
             openprs=$(gh pr list --state open --head $branch --json number --jq 'length')
-            echo "Open PRs for branch $branch: $openprs"
 
             if [ "$openprs" -gt 0 ]; then
               echo "Skipping branch: $branch (has $openprs open PR(s))"
@@ -103,7 +100,6 @@ jobs:
               if [ "${{ inputs.dry_run }}" = "false" ]; then
                 #git push origin --delete "$branch"
                 echo "Branch $branch would be deleted here (Author: $author) - removed delete command to test the real run without actually deleting branches"
-              fi
               else
                 echo "DRY RUN: Would delete branch: $branch (Author: $author)"
               fi
