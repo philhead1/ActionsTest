@@ -66,7 +66,7 @@ jobs:
             echo "Checking branch: $branch (Last commit: $last_commit_date, Author: $author, Inactive for: $diff_days days)"
 
             # Skip protected branches
-            if [ $branch == "main" ] || [ $branch == "master" ] || [ $branch == "develop" ] || [ $branch == "release" ]; then
+            if [ $branch == "main" ] || [ $branch == "master" ] || [ $branch == "develop" ] || [ $branch == "release" ] || [$branch == "origin" ]; then
               echo "Skipping protected branch: $branch"
               continue
             fi
@@ -78,7 +78,6 @@ jobs:
             echo "Calling API: https://api.github.com/repos/$OWNER/$REPO/pulls?head=$OWNER:$branch&state=open"
 
             openprs=$(gh pr list --state open --head $branch --json number --jq 'length')
-            #openprs=$(curl -s -H "Authorization: Bearer $PAT" -L "https://api.github.com/repos/$OWNER/$REPO/pulls?head=$OWNER:$branch&state=open" | grep -c '"number"')
             echo "Open PRs for branch $branch: $openprs"
 
             if [ "$openprs" -gt 0 ]; then
@@ -92,7 +91,7 @@ jobs:
             if [ $diff_days -gt ${{ inputs.inactive_days }} ]; then
               echo "Branch: $branch is inactive for $diff_days days (Last commit: $last_commit_date) Author: $author"
               if [ "${{ inputs.dry_run }}" = "false" ]; then
-                curl -H "Authorization: Bearer $PAT" -X POST "https://api.github.com/repos/$OWNER/$REPO/issues" -d "{\"title\":\"Inactive Branch: $branch\",\"body\":\"The branch '$branch' has been inactive for $diff_days days. Last commit was on $last_commit_date. Please review and delete if not needed.\",\"assignees\":[\"$author\"]}"
+                gh issue create --title "Inactive Branch: $branch" --body "The branch '$branch' has been inactive for $diff_days days. The last commit was made on $last_commit_date by $author. Please review the branch and take necessary action." --assignee "$author"
               else
                 echo "DRY RUN: Would create an issue for branch: $branch (Author: $author)"
               fi
@@ -102,7 +101,11 @@ jobs:
             if [ $diff_days -gt $(( ${{ inputs.inactive_days}} + ${{ inputs.grace_period_days }} )) ]; then
               echo "Deleting inactive branch: $branch (Last commit: $last_commit_date) Author: $author"
               if [ "${{ inputs.dry_run }}" = "false" ]; then
-                git push origin --delete "$branch"
+                #git push origin --delete "$branch"
+                echo "Branch $branch would be deleted here (Author: $author) - removed delete command to test the real run without actually deleting branches"
+              fi
+              else
+                echo "DRY RUN: Would delete branch: $branch (Author: $author)"
               fi
             fi
           done <<< "$branches"
