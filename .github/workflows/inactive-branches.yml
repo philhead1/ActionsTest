@@ -73,16 +73,11 @@ jobs:
             # Check if there are any open PRs for the branch
             echo "Repo name: $REPO, Owner: $OWNER"
 
-            test1=$(curl -s -H "Authorization: Bearer $PAT" -L "https://api.github.com/repos/$OWNER/$REPO/pulls?head=$OWNER:$branch&state=open")
-            echo $test1
-
-            test2=$(echo $test1 | grep -c '"number"')
-            echo $test2
-
             echo "Checking open PRs for branch: $branch"
             echo "Calling API: https://api.github.com/repos/$OWNER/$REPO/pulls?head=$OWNER:$branch&state=open"
 
-            openprs=$(curl -s -H "Authorization: Bearer $PAT" -L "https://api.github.com/repos/$OWNER/$REPO/pulls?head=$OWNER:$branch&state=open" | grep -c '"number"')
+            openprs=$(gh pr list --state open --head $branch --json number --jq 'length')
+            #openprs=$(curl -s -H "Authorization: Bearer $PAT" -L "https://api.github.com/repos/$OWNER/$REPO/pulls?head=$OWNER:$branch&state=open" | grep -c '"number"')
             echo "Open PRs for branch $branch: $openprs"
 
             if [ "$openprs" -gt 0 ]; then
