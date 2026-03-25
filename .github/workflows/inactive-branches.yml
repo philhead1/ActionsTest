@@ -11,8 +11,16 @@ on:
         description: 'Number of additional days to wait before deleting an inactive branch'
         required: false
         default: '7'
+      create_issue:
+        description: 'Enable/Disable issue creation for inactive branches'
+        required: false
+        default: 'true'
+      delete_branch:
+        description: 'Enable/Disable branch deletion for inactive branches'
+        required: false
+        default: 'true'
       dry_run:
-        description: 'Set to true to only log the branches that would be deleted without actually deleting them'
+        description: 'Enable/Disable dry run mode (only logs actions without making changes)'
         required: false
         default: 'true'
     # schedule:
@@ -84,19 +92,9 @@ jobs:
 
             echo "Branch: $branch is inactive for $diff_days days (Last commit: $last_commit_date) Author: $author"
 
-            # If the branch is inactive for more than inactive days, then send a notification to the author
-            if [ $diff_days -gt ${{ inputs.inactive_days }} ]; then
-              echo "Branch: $branch is inactive for $diff_days days (Last commit: $last_commit_date) Author: $author"
-              if [ "${{ inputs.dry_run }}" = "false" ]; then
-                gh issue create --title "Inactive Branch: $branch" --body "The branch '$branch' has been inactive for $diff_days days. The last commit was made on $last_commit_date by $author. Please review the branch and take necessary action." --assignee "$author"
-              else
-                echo "DRY RUN: Would create an issue for branch: $branch (Author: $author)"
-              fi
-            fi	
-
-            # If the branch is inactive for more than inactive days + grace period, then delete it only if it's not a dry run
-            if [ $diff_days -gt $(( ${{ inputs.inactive_days}} + ${{ inputs.grace_period_days }} )) ]; then
-              echo "Deleting inactive branch: $branch (Last commit: $last_commit_date) Author: $author"
+            # If the branch is inactive for more than inactive days + grace period, then delete it only if it's not a dry run and delete_branch is true
+            if [ $diff_days -gt $(( ${{ inputs.inactive_days}} + ${{ inputs.grace_period_days }} )) ] && [ "${{ inputs.delete_branch }}" = "true" ]; then
+              echo "Deleting inactive branch: $branch (Last commit: $last_commit_date) Author: $author Dry Run: ${{ inputs.dry_run }}"
               if [ "${{ inputs.dry_run }}" = "false" ]; then
                 #git push origin --delete "$branch"
                 echo "Branch $branch would be deleted here (Author: $author) - removed delete command to test the real run without actually deleting branches"
@@ -104,5 +102,17 @@ jobs:
                 echo "DRY RUN: Would delete branch: $branch (Author: $author)"
               fi
             fi
+
+            # If the branch is inactive for more than inactive days, create an issue only if it's not a dry run and create_issue is true
+            if [ $diff_days -gt ${{ inputs.inactive_days }} ] && [ "${{ inputs.create_issue }}" = "true" ]; then
+              echo "Branch: $branch is inactive for $diff_days days (Last commit: $last_commit_date) Author: $author"
+              if [ "${{ inputs.dry_run }}" = "false" ]; then
+                gh issue create --title "Inactive Branch: $branch" --body "The branch '$branch' has been inactive for $diff_days days. The last commit was made on $last_commit_date by $author. Please review the branch and take necessary action."
+                continue
+              else
+                echo "DRY RUN: Would create an issue for branch: $branch (Author: $author)"
+                continue
+              fi
+            fi	
           done <<< "$branches"
 
