@@ -113,10 +113,10 @@ jobs:
               echo "Branch: $branch is inactive for $diff_days days (Last commit: $last_commit_date) Author: $author"
               if [ "${{ inputs.dry_run }}" = "false" ]; then
                 # Check if the inactive branch label already exists, if not create it
-                if ! gh label view "inactive-branch" > /dev/null 2>&1; then
+                if ! gh label list --json name --jq '.[].name' | grep -e "inactive-branch"; then
                   echo "Creating label: inactive-branch"
                   gh label create "inactive-branch" --color FF0000 --description "Branches that have been inactive for a specified number of days"
-                fi
+                fi  
                 gh issue create --title "Inactive Branch: $branch - $author" --body "The branch '$branch' has been inactive for $diff_days days. The last commit was made on $last_commit_date by $author. Please review the branch and take necessary action." --label "inactive-branch"
                 continue
               else
