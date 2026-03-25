@@ -95,7 +95,7 @@ jobs:
             # If the branch is inactive for more than inactive days + grace period, then delete it only if it's not a dry run and delete_branch is true
             if [ $diff_days -gt $(( ${{ inputs.inactive_days}} + ${{ inputs.grace_period_days }} )) ] && [ "${{ inputs.delete_branch }}" = "true" ]; then
               echo "Deleting inactive branch: $branch (Last commit: $last_commit_date) Author: $author Dry Run: ${{ inputs.dry_run }}"
-              if [ "${{ inputs.dry_run }}" = "false" ]; then
+              if [ "${{ inputs.dry_run }}" = "false" ] && [ "${{ inputs.delete_branch }}" = "true" ]; then
                 #git push origin --delete "$branch"
                 echo "Closing related inactive branches issues for branch: $branch"
                 gh issue list --label "inactive-branch" --json number,title,body --jq ".[] | select(.body | contains(\"$branch\")) | .number" | while read -r issue_number; do
