@@ -18,7 +18,7 @@ on:
       delete_branch:
         description: 'Enable/Disable branch deletion for inactive branches'
         required: false
-        default: 'true'
+        default: 'false'
       dry_run:
         description: 'Enable/Disable dry run mode (only logs actions without making changes)'
         required: false
@@ -104,7 +104,7 @@ jobs:
                 
                 echo "Deleting branch: $branch"
                 git push origin --delete "$branch"
-                
+
               else
                 echo "DRY RUN: Would delete branch: $branch (Author: $author)"
               fi
